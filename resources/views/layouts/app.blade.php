@@ -6,7 +6,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
 
-        <title>{{ 'CBT-JINK' }}</title>
+        <title>{{ 'Otaa-CBT' }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
