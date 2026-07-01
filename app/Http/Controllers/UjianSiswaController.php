@@ -9,11 +9,16 @@ class UjianSiswaController extends Controller
 {
     public function index()
     {
-        // Mengambil semua jadwal ujian yang ada di database
-        // Nanti kita bisa menambahkan filter agar hanya menampilkan ujian hari ini
-        $ujian = Ujian::with('mataPelajaran')->get();
+        // 1. Ambil semua jadwal ujian yang tersedia
+        $ujian = \App\Models\Ujian::orderBy('created_at', 'desc')->get();
 
-        return view('siswa.ujian.index', compact('ujian'));
+        // 2. Ambil daftar ID ujian yang sudah pernah dikerjakan oleh siswa ini
+        $ujianSelesai = \App\Models\HasilUjian::where('user_id', \Illuminate\Support\Facades\Auth::id())
+            ->pluck('ujian_id')
+            ->toArray();
+
+        // 3. Kirim datanya ke tampilan
+        return view('siswa.ujian.index', compact('ujian', 'ujianSelesai'));
     }
 
     public function hasil()

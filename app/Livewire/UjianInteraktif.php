@@ -19,10 +19,24 @@ class UjianInteraktif extends Component
 
     public function mount($id)
     {
-        $this->ujian = Ujian::findOrFail($id);
-        $this->soals = Soal::with('jawabans')
+        // 1. PENGAMANAN EXTRA: Cek apakah user sudah pernah mengerjakan ujian ini
+        $sudahDikerjakan = \App\Models\HasilUjian::where('user_id', \Illuminate\Support\Facades\Auth::id())
             ->where('ujian_id', $id)
-            ->get();
+            ->exists();
+
+        // Mengambil data user yang sedang login dan "mengajari" VS Code tipe Model-nya
+        /** @var \App\Models\User $user */
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        // Jika sudah dikerjakan DAN dia BUKAN admin, tendang keluar!
+        if ($sudahDikerjakan && !$user->hasRole('admin')) {
+            session()->flash('error', 'Akses ditolak! Anda sudah mengerjakan ujian ini.');
+            return redirect('/beranda-siswa');
+        }
+
+        // 2. Kode Anda sebelumnya untuk mengambil data ujian dan soal...
+        $this->ujian = \App\Models\Ujian::findOrFail($id);
+        $this->soals = \App\Models\Soal::with('jawabans')->where('ujian_id', $id)->get();
     }
 
     public function gantiSoal($index)

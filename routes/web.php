@@ -8,13 +8,14 @@ use App\Http\Controllers\SoalController;
 use App\Http\Controllers\UjianSiswaController;
 use App\Http\Controllers\KoreksiController;
 use App\Http\Controllers\RekapNilaiController;
+use App\Http\Controllers\DashboardController;
 
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
-Route::view('dashboard', 'dashboard')
+Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
