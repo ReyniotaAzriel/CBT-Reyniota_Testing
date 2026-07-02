@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Barryvdh\DomPDF\Facade\Pdf;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -87,5 +89,35 @@ class UserController extends Controller
 
         $user->delete();
         return redirect()->route('users.index')->with('success', 'Pengguna berhasil dihapus!');
+    }
+
+    public function cetakKartu()
+    {
+        // Ambil khusus data siswa saja
+        $siswas = User::role('siswa')->orderBy('name', 'asc')->get();
+
+        if ($siswas->isEmpty()) {
+            return redirect()->back()->with('error', 'Belum ada data siswa untuk dicetak!');
+        }
+
+        // Siapkan PDF
+        $pdf = Pdf::loadView('users.kartu_ujian', compact('siswas'));
+        $pdf->setPaper('A4', 'portrait');
+
+        // Langsung tampilkan PDF di browser (stream)
+        return $pdf->stream('kartu_peserta_ujian.pdf');
+    }
+
+    public function scanPresensi($user_id)
+    {
+        // Ambil ujian yang paling baru/aktif saat ini
+        $ujianAktif = \App\Models\Ujian::latest()->first();
+
+        \App\Models\Kehadiran::updateOrCreate(
+            ['user_id' => $user_id, 'ujian_id' => $ujianAktif->id],
+            ['status' => 'hadir', 'waktu_scan' => now()]
+        );
+
+        return "<h1>Absensi Berhasil!</h1><p>Siswa sudah terdata hadir untuk ujian ini.</p>";
     }
 }

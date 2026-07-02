@@ -29,6 +29,8 @@ Route::middleware(['auth'])->group(function () {
 
     // RUTE KHUSUS ADMIN (Manajemen Pengguna)
     Route::middleware(['auth', 'role:admin'])->group(function () {
+        // Tombol Cetak Kartu Ujian
+        Route::get('/users/cetak-kartu', [App\Http\Controllers\UserController::class, 'cetakKartu'])->name('users.cetak_kartu');
         Route::resource('users', UserController::class);
     });
 
@@ -39,6 +41,9 @@ Route::middleware(['auth'])->group(function () {
 
         // Rute Upload Excel Soal
         Route::post('/soal/import/{ujian_id}', [App\Http\Controllers\SoalController::class, 'import'])->name('soal.import');
+
+        // Rute Presensi
+        Route::get('/presensi/scan/{user_id}', [App\Http\Controllers\UserController::class, 'scanPresensi'])->name('presensi.scan');
 
         // Mata Pelajaran
         Route::get('/mata-pelajaran', [MataPelajaranController::class, 'index'])->name('mata-pelajaran.index');
