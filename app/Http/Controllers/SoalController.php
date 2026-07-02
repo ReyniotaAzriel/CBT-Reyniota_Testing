@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Soal;
 use App\Models\Ujian;
 use App\Models\Jawaban;
+use App\Imports\SoalImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SoalController extends Controller
 {
@@ -98,7 +100,7 @@ class SoalController extends Controller
 
         return redirect()->route('soal.index')->with('success', 'Soal dan pilihan jawaban berhasil diperbarui!');
     }
-    
+
     // Menampilkan daftar soal khusus untuk satu ujian
     public function showByUjian($ujian_id)
     {
@@ -120,6 +122,22 @@ class SoalController extends Controller
         $soal->delete();
 
         return redirect()->route('soal.index')->with('success', 'Soal beserta jawabannya berhasil dihapus!');
+    }
+
+    public function import(Request $request, $ujian_id)
+    {
+        $request->validate([
+            'file_excel' => 'required|mimes:xlsx,xls,csv|max:5120', // Maksimal 5MB
+        ]);
+
+        try {
+            // Jalankan keajaiban Maatwebsite Excel
+            Excel::import(new SoalImport($ujian_id), $request->file('file_excel'));
+
+            return redirect()->back()->with('success', 'Ratusan soal dari Excel berhasil diimpor!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengimpor! Pastikan format file Anda sesuai template. Error: ' . $e->getMessage());
+        }
     }
 
 }

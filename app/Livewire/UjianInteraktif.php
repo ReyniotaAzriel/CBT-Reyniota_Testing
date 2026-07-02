@@ -16,6 +16,8 @@ class UjianInteraktif extends Component
     public $soals = [];
     public $soalAktif = 0;
     public $jawabanSiswa = [];
+    public $inputToken = '';
+    public $tokenValid = false;
 
     public function mount($id)
     {
@@ -37,6 +39,36 @@ class UjianInteraktif extends Component
         // 2. Kode Anda sebelumnya untuk mengambil data ujian dan soal...
         $this->ujian = \App\Models\Ujian::findOrFail($id);
         $this->soals = \App\Models\Soal::with('jawabans')->where('ujian_id', $id)->get();
+
+        // 3. AUTO-LOAD DRAFT JAWABAN (JIKA ADA)
+        // Mengecek apakah siswa punya simpanan jawaban sebelumnya kalau ke-refresh
+        $sessionKey = 'draft_ujian_' . $id;
+        if (session()->has($sessionKey)) {
+            $this->jawabanSiswa = session()->get($sessionKey);
+        }
+
+        // Jika ujian ini belum disetting token oleh guru, langsung loloskan
+        // if (empty($this->ujian->token)) {
+        //     $this->tokenValid = true;
+        // }
+    }
+
+    public function verifikasiToken()
+    {
+        // 1. Cek dulu apakah guru sudah membuat token
+        if (empty($this->ujian->token)) {
+            $this->inputToken = '';
+            session()->flash('error_token', 'Akses ditolak! Guru belum merilis Token untuk ujian ini.');
+            return;
+        }
+
+        // 2. Jika token sudah ada, baru cocokkan dengan ketikan siswa
+        if (strtoupper(trim($this->inputToken)) === $this->ujian->token) {
+            $this->tokenValid = true;
+        } else {
+            $this->inputToken = ''; // Kosongkan form jika salah
+            session()->flash('error_token', 'Token yang Anda masukkan salah!');
+        }
     }
 
     public function gantiSoal($index)
@@ -47,11 +79,19 @@ class UjianInteraktif extends Component
     public function simpanJawaban($soalId, $jawabanId)
     {
         $this->jawabanSiswa[$soalId] = $jawabanId;
+
+        // AUTO-SAVE: Simpan jawaban PG ke session setiap kali diklik
+        $sessionKey = 'draft_ujian_' . $this->ujian->id;
+        session()->put($sessionKey, $this->jawabanSiswa);
     }
 
     public function updatedJawabanSiswa($value, $key)
     {
         $this->jawabanSiswa[$key] = $value;
+
+        // AUTO-SAVE: Simpan teks Essay ke session setiap kali siswa ngetik
+        $sessionKey = 'draft_ujian_' . $this->ujian->id;
+        session()->put($sessionKey, $this->jawabanSiswa);
     }
 
     public function kumpulkanUjian()
@@ -86,7 +126,7 @@ class UjianInteraktif extends Component
             'status'      => $adaEssay ? 'menunggu_koreksi' : 'selesai',
         ]);
 
-        // 2. BARU: Simpan Teks Jawaban Essay Siswa ke Database
+        // 2. Simpan Teks Jawaban Essay Siswa ke Database
         foreach ($this->soals as $soal) {
             if ($soal->tipe_soal == 'essay' && isset($this->jawabanSiswa[$soal->id])) {
                 \App\Models\JawabanSiswa::create([
@@ -97,6 +137,10 @@ class UjianInteraktif extends Component
                 ]);
             }
         }
+
+        // 3. HAPUS DRAFT SESSION KARENA UJIAN SUDAH BERHASIL DIKUMPULKAN
+        $sessionKey = 'draft_ujian_' . $this->ujian->id;
+        session()->forget($sessionKey);
 
         session()->flash('success', 'Ujian telah dikumpulkan.');
         return redirect()->route('siswa.ujian.index');

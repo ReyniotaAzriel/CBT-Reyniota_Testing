@@ -10,12 +10,7 @@ class Ujian extends Model
     use HasFactory;
 
     // 1. Mengizinkan kolom-kolom ini diisi melalui formulir
-    protected $fillable = [
-        'mata_pelajaran_id',
-        'judul_ujian',
-        'tanggal_ujian',
-        'durasi_menit'
-    ];
+    protected $fillable = ['mata_pelajaran_id', 'judul_ujian', 'tanggal_ujian', 'durasi_menit', 'token'];
 
     // 2. Membuat relasi: 1 Ujian dimiliki oleh 1 Mata Pelajaran
     public function mataPelajaran()

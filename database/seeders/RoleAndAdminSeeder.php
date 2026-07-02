@@ -45,5 +45,14 @@ class RoleAndAdminSeeder extends Seeder
             'jurusan' => 'RPL',     // Tambahan data jurusan
         ]);
         $siswa->assignRole('siswa');
+
+        $siswa = User::create([
+            'name' => 'Ujang Sebleker',
+            'email' => 'siswa2@sekolah.com',
+            'password' => bcrypt('password123'),
+            'kelas' => 'XII',       // Tambahan data kelas
+            'jurusan' => 'TJKT',     // Tambahan data jurusan
+        ]);
+        $siswa->assignRole('siswa');
     }
 }

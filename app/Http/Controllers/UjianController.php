@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\Ujian;
 use App\Models\MataPelajaran;
@@ -101,5 +102,18 @@ class UjianController extends Controller
         $ujian->delete();
 
         return redirect()->route('ujian.index')->with('success', 'Jadwal Ujian berhasil dihapus!');
+    }
+
+
+    public function generateToken($id)
+    {
+        $ujian = \App\Models\Ujian::findOrFail($id);
+
+        // Membuat 6 karakter acak (huruf besar & angka)
+        $ujian->update([
+            'token' => strtoupper(Str::random(6))
+        ]);
+
+        return redirect()->back()->with('success', 'Token ujian berhasil dibuat!');
     }
 }

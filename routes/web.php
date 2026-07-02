@@ -9,6 +9,7 @@ use App\Http\Controllers\UjianSiswaController;
 use App\Http\Controllers\KoreksiController;
 use App\Http\Controllers\RekapNilaiController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
 
 
 Route::get('/', function () {
@@ -25,10 +26,20 @@ Route::view('profile', 'profile')
 
 Route::middleware(['auth'])->group(function () {
 
+
+    // RUTE KHUSUS ADMIN (Manajemen Pengguna)
+    Route::middleware(['auth', 'role:admin'])->group(function () {
+        Route::resource('users', UserController::class);
+    });
+
     // ==========================================
     // RUTE KHUSUS ADMIN & GURU
     // ==========================================
     Route::middleware(['role:admin|guru'])->group(function () {
+
+        // Rute Upload Excel Soal
+        Route::post('/soal/import/{ujian_id}', [App\Http\Controllers\SoalController::class, 'import'])->name('soal.import');
+
         // Mata Pelajaran
         Route::get('/mata-pelajaran', [MataPelajaranController::class, 'index'])->name('mata-pelajaran.index');
         Route::get('/mata-pelajaran/create', [MataPelajaranController::class, 'create'])->name('mata-pelajaran.create');
@@ -44,6 +55,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/ujian/{id}/edit', [UjianController::class, 'edit'])->name('ujian.edit');
         Route::put('/ujian/{id}', [UjianController::class, 'update'])->name('ujian.update');
         Route::delete('/ujian/{id}', [UjianController::class, 'destroy'])->name('ujian.destroy');
+        Route::post('/ujian/{id}/generate-token', [App\Http\Controllers\UjianController::class, 'generateToken'])->name('ujian.generate_token');
 
         // Soal
         Route::get('/soal', [SoalController::class, 'index'])->name('soal.index');
