@@ -10,22 +10,56 @@
 
             <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
 
-                <div class="p-8 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="p-8 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
                         <h3 class="text-xl font-extrabold text-gray-900">Data Seluruh Hasil Ujian</h3>
                         <p class="text-gray-500 mt-1">Pantau nilai dan status ujian dari semua siswa yang telah mengerjakan.</p>
                     </div>
 
-                    <div class="flex gap-3">
-                        <a href="{{ route('rekap.export.excel') }}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-lg shadow transition duration-150">
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <a href="{{ route('rekap.export.excel', request()->all()) }}" class="w-full md:w-auto inline-flex justify-center items-center px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-xl shadow-md transition duration-150">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                             Excel
                         </a>
-                        <a href="{{ route('rekap.export.pdf') }}" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg shadow transition duration-150">
+                        <a href="{{ route('rekap.export.pdf', request()->all()) }}" class="w-full md:w-auto inline-flex justify-center items-center px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl shadow-md transition duration-150">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                             PDF
                         </a>
                     </div>
+                </div>
+
+                <div class="bg-gray-50/50 p-6 border-b border-gray-100 flex flex-col sm:flex-row items-center gap-4">
+                    <form action="{{ route('rekap.index') }}" method="GET" class="flex flex-col sm:flex-row items-center gap-3 w-full">
+
+                        <div class="w-full sm:w-48 relative">
+                            <select name="kelas" class="w-full border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm font-medium text-gray-700 cursor-pointer appearance-none pl-4 pr-10 py-3">
+                                <option value="">Semua Kelas</option>
+                                @foreach($listKelas as $k)
+                                    <option value="{{ $k }}" {{ request('kelas') == $k ? 'selected' : '' }}>Kelas {{ $k }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="w-full sm:w-56 relative">
+                            <select name="jurusan" class="w-full border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm font-medium text-gray-700 cursor-pointer appearance-none pl-4 pr-10 py-3">
+                                <option value="">Semua Jurusan</option>
+                                @foreach($listJurusan as $j)
+                                    <option value="{{ $j }}" {{ request('jurusan') == $j ? 'selected' : '' }}>{{ $j }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <button type="submit" class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-md transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                            Terapkan Filter
+                        </button>
+
+                        @if(request('kelas') || request('jurusan'))
+                            <a href="{{ route('rekap.index') }}" class="w-full sm:w-auto inline-flex justify-center items-center px-5 py-3 bg-white border border-gray-300 hover:bg-red-50 text-red-600 text-sm font-bold rounded-xl shadow-sm transition-colors">
+                                Reset
+                            </a>
+                        @endif
+                    </form>
                 </div>
 
                 <div class="p-8">
@@ -75,7 +109,7 @@
                                 @empty
                                     <tr>
                                         <td colspan="5" class="py-12 text-center">
-                                            <p class="text-gray-500 text-lg font-medium">Belum ada siswa yang menyelesaikan ujian.</p>
+                                            <p class="text-gray-500 text-lg font-medium">Belum ada siswa yang menyelesaikan ujian atau data tidak ditemukan pada filter ini.</p>
                                         </td>
                                     </tr>
                                 @endforelse

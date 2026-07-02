@@ -40,7 +40,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:admin|guru'])->group(function () {
 
         // Rute Upload Excel Soal
-        Route::post('/soal/import/{ujian_id}', [App\Http\Controllers\SoalController::class, 'import'])->name('soal.import');
+        Route::post('/soal/import/{ujian_id?}', [SoalController::class, 'import'])->name('soal.import');
 
         // Rute Presensi
         Route::get('/presensi/scan/{user_id}', [App\Http\Controllers\UserController::class, 'scanPresensi'])->name('presensi.scan');

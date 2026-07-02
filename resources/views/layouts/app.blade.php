@@ -33,5 +33,39 @@
                 {{ $slot }}
             </main>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    @if(session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: '{{ session('success') }}',
+                    showConfirmButton: false,
+                    timer: 2500,
+                    customClass: {
+                        popup: 'rounded-3xl shadow-2xl border border-gray-100'
+                    }
+                });
+            });
+        </script>
+    @endif
+
+    @if(session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops Gagal!',
+                    text: '{{ session('error') }}',
+                    confirmButtonColor: '#dc2626',
+                    customClass: {
+                        popup: 'rounded-3xl shadow-2xl border border-gray-100'
+                    }
+                });
+            });
+        </script>
+    @endif
     </body>
 </html>

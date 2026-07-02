@@ -105,11 +105,10 @@
                                                 class="inline-flex items-center px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-sm font-bold rounded-lg transition-colors">
                                                 Edit
                                             </a>
-                                            <form action="{{ route('soal.destroy', $item->id) }}" method="POST"
-                                                onsubmit="return confirm('Yakin ingin menghapus soal ini?');">
+                                            <form id="form-hapus-{{ $item->id }}" action="{{ route('soal.destroy', $item->id) }}" method="POST">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit"
+                                                <button type="button" onclick="konfirmasiHapusSoal({{ $item->id }})"
                                                     class="inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-bold rounded-lg transition-colors">
                                                     Hapus
                                                 </button>
@@ -168,4 +167,28 @@
         </form>
     </x-modal>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function konfirmasiHapusSoal(id) {
+            Swal.fire({
+                title: 'Yakin ingin menghapus soal ini?',
+                text: "Data soal dan pilihan jawabannya akan terhapus permanen!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626', // red-600
+                cancelButtonColor: '#6b7280', // gray-500
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal',
+                reverseButtons: true, // Membalik posisi tombol agar tombol Ya ada di kanan
+                customClass: {
+                    popup: 'rounded-3xl shadow-xl border border-gray-100'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Cari form berdasarkan ID dan submit
+                    document.getElementById('form-hapus-' + id).submit();
+                }
+            })
+        }
+    </script>
 </x-app-layout>

@@ -2,37 +2,69 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\HasilUjian;
-use App\Exports\RekapNilaiExport;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\RekapNilaiExport;
 
 class RekapNilaiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $rekapNilai = HasilUjian::with(['user', 'ujian'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // 1. Siapkan Query Dasar
+        $query = HasilUjian::with(['user', 'ujian'])->latest();
 
-        return view('rekap-nilai.index', compact('rekapNilai'));
+        // 2. Filter Berdasarkan Kelas Jika Dipilih
+        if ($request->filled('kelas')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('kelas', $request->kelas);
+            });
+        }
+
+        // 3. Filter Berdasarkan Jurusan Jika Dipilih
+        if ($request->filled('jurusan')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('jurusan', $request->jurusan);
+            });
+        }
+
+        // 4. Eksekusi Query
+        $rekapNilai = $query->get();
+
+        // 5. Ambil data kelas dan jurusan unik dari tabel Users untuk Dropdown Filter
+        $listKelas = User::whereNotNull('kelas')->where('kelas', '!=', '')->distinct()->pluck('kelas');
+        $listJurusan = User::whereNotNull('jurusan')->where('jurusan', '!=', '')->distinct()->pluck('jurusan');
+
+        return view('rekap-nilai.index', compact('rekapNilai', 'listKelas', 'listJurusan'));
     }
 
-    public function exportExcel()
+    public function exportPdf(Request $request)
     {
-        return Excel::download(new RekapNilaiExport, 'Rekap_Nilai_Siswa.xlsx');
-    }
+        $query = HasilUjian::with(['user', 'ujian'])->latest();
 
-    public function exportPdf()
-    {
-        $rekapNilai = HasilUjian::with(['user', 'ujian'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Terapkan filter yang sama saat export PDF
+        if ($request->filled('kelas')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('kelas', $request->kelas);
+            });
+        }
+        if ($request->filled('jurusan')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('jurusan', $request->jurusan);
+            });
+        }
 
-        // Memuat tampilan khusus PDF
+        $rekapNilai = $query->get();
         $pdf = Pdf::loadView('rekap-nilai.pdf', compact('rekapNilai'));
 
-        return $pdf->download('Rekap_Nilai_Siswa.pdf');
+        return $pdf->download('rekap_nilai_siswa.pdf');
+    }
+
+    public function exportExcel(Request $request)
+    {
+        // Kirim filter ke class Export Excel
+        return Excel::download(new RekapNilaiExport($request->kelas, $request->jurusan), 'rekap_nilai_siswa.xlsx');
     }
 }

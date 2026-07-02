@@ -9,19 +9,41 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class RekapNilaiExport implements FromCollection, WithHeadings, WithMapping
 {
-    public function collection()
+    protected $kelas;
+    protected $jurusan;
+
+    // Terima parameter dari Controller
+    public function __construct($kelas = null, $jurusan = null)
     {
-        // Mengambil semua data hasil ujian
-        return HasilUjian::with(['user', 'ujian'])->orderBy('created_at', 'desc')->get();
+        $this->kelas = $kelas;
+        $this->jurusan = $jurusan;
     }
 
-    // Mengatur isi baris per baris
+    public function collection()
+    {
+        $query = HasilUjian::with(['user', 'ujian'])->latest();
+
+        // Terapkan Filter
+        if ($this->kelas) {
+            $query->whereHas('user', function ($q) {
+                $q->where('kelas', $this->kelas);
+            });
+        }
+        if ($this->jurusan) {
+            $query->whereHas('user', function ($q) {
+                $q->where('jurusan', $this->jurusan);
+            });
+        }
+
+        return $query->get();
+    }
+
     public function map($hasil): array
     {
         return [
             $hasil->user->name,
-            $hasil->user->kelas ?? '-',       // Tambahan Kelas
-            $hasil->user->jurusan ?? '-',     // Tambahan Jurusan
+            $hasil->user->kelas ?? '-',
+            $hasil->user->jurusan ?? '-',
             $hasil->ujian->judul_ujian,
             $hasil->created_at->format('d M Y, H:i'),
             $hasil->status == 'menunggu_koreksi' ? 'Menunggu Koreksi' : 'Selesai',
@@ -29,13 +51,12 @@ class RekapNilaiExport implements FromCollection, WithHeadings, WithMapping
         ];
     }
 
-    // Mengatur judul kolom paling atas
     public function headings(): array
     {
         return [
             'Nama Siswa',
-            'Kelas',         // Tambahan Kelas
-            'Jurusan',       // Tambahan Jurusan
+            'Kelas',
+            'Jurusan',
             'Mata Ujian',
             'Waktu Selesai',
             'Status',

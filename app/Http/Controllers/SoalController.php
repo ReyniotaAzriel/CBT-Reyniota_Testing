@@ -121,22 +121,29 @@ class SoalController extends Controller
         // Cukup hapus soalnya. Jawaban akan otomatis terhapus karena efek cascadeOnDelete di migration kita.
         $soal->delete();
 
-        return redirect()->route('soal.index')->with('success', 'Soal beserta jawabannya berhasil dihapus!');
+        return redirect()->route('soal.by_ujian', ['ujian_id' => $soal->ujian_id])->with('success', 'Soal beserta jawabannya berhasil dihapus!');
     }
 
-    public function import(Request $request, $ujian_id)
+    public function import(Request $request, $ujian_id = null)
     {
-        $request->validate([
-            'file_excel' => 'required|mimes:xlsx,xls,csv|max:5120', // Maksimal 5MB
-        ]);
+        // 1. Tentukan Tujuan ID Ujian
+        // Jika $ujian_id dari URL kosong (dari halaman Create), ambil dari pilihan dropdown form ($request->ujian_id)
+        $targetUjianId = $ujian_id ?? $request->ujian_id;
 
+        // 2. Validasi agar sistem tidak bingung jika Guru lupa memilih ujian
+        if (!$targetUjianId) {
+            return back()->with('error', 'Silakan pilih Tujuan Ujian terlebih dahulu!');
+        }
+
+        // 3. Proses Import File Excel
+        // 3. Proses Import File Excel
         try {
-            // Jalankan keajaiban Maatwebsite Excel
-            Excel::import(new SoalImport($ujian_id), $request->file('file_excel'));
+            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\SoalImport($targetUjianId), $request->file('file'));
 
-            return redirect()->back()->with('success', 'Ratusan soal dari Excel berhasil diimpor!');
+            // UBAH BARIS INI: Arahkan ke soal.index (Halaman Kartu Bank Soal)
+            return redirect()->route('soal.index')->with('success', 'Ratusan soal berhasil diimport!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal mengimpor! Pastikan format file Anda sesuai template. Error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memproses file Excel: ' . $e->getMessage());
         }
     }
 
