@@ -30,6 +30,13 @@ class RekapNilaiController extends Controller
             });
         }
 
+        // Tambahkan ini di dalam fungsi index
+        if ($request->filled('search')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%');
+            });
+        }
+
         // 4. Eksekusi Query
         $rekapNilai = $query->get();
 

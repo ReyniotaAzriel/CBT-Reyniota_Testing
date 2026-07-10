@@ -18,6 +18,7 @@ class UjianInteraktif extends Component
     public $jawabanSiswa = [];
     public $inputToken = '';
     public $tokenValid = false;
+    public $durasiMenit = 0;
 
     public function mount($id)
     {
@@ -38,6 +39,7 @@ class UjianInteraktif extends Component
 
         // 2. Kode Anda sebelumnya untuk mengambil data ujian dan soal...
         $this->ujian = \App\Models\Ujian::findOrFail($id);
+        $this->durasiMenit = $this->ujian->durasi_menit;
         $this->soals = \App\Models\Soal::with('jawabans')->where('ujian_id', $id)->get();
 
         // 3. AUTO-LOAD DRAFT JAWABAN (JIKA ADA)
