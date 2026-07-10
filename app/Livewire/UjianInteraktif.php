@@ -148,6 +148,10 @@ class UjianInteraktif extends Component
 
     public function render()
     {
-        return view('livewire.ujian-interaktif');
+        // Pastikan soals ada isinya biar blade nggak error saat count() atau akses array
+        return view('livewire.ujian-interaktif', [
+            'soals' => $this->soals,
+            'ujian' => $this->ujian
+        ]);
     }
 }
