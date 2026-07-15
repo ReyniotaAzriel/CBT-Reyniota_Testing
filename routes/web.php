@@ -78,6 +78,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Rute Rekap Nilai
         Route::get('/rekap-nilai', [RekapNilaiController::class, 'index'])->name('rekap.index');
+        Route::get('/rekap/detail/{hasil_ujian_id}', [RekapNilaiController::class, 'detail'])->name('rekap.detail');
         // Rute Rekap Nilai & Export
         Route::get('/rekap-nilai', [RekapNilaiController::class, 'index'])->name('rekap.index');
         Route::get('/rekap-nilai/export/excel', [RekapNilaiController::class, 'exportExcel'])->name('rekap.export.excel');

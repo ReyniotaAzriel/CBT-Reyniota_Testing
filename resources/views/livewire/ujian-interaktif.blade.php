@@ -6,7 +6,7 @@
 
                 {{-- Judul Ujian & Timer (Alpine.js) --}}
                 <div class="bg-white p-6 rounded-lg shadow-sm mb-6 flex flex-col md:flex-row justify-between items-center gap-4"
-                    x-data="timer({{ $durasiMenit }})" x-init="startTimer()">
+                    x-data="timer({{ $sisaDetik }})" x-init="startTimer()">
                     <h2 class="font-bold text-2xl text-gray-800 text-center md:text-left">
                         Ujian: <span class="text-blue-600">{{ $ujian->judul_ujian }}</span>
                     </h2>
@@ -144,8 +144,8 @@
     <script>
         // --- LOGIKA TIMER ALPINE.JS ---
         document.addEventListener('alpine:init', () => {
-            Alpine.data('timer', (durasiMenit) => ({
-                timeLeft: durasiMenit * 60, // Konversi ke detik
+            Alpine.data('timer', (sisaDetik) => ({
+                timeLeft: sisaDetik, // Langsung pakai sisa detik dari server, nggak perlu dikali 60 lagi
                 intervalId: null,
 
                 startTimer() {
@@ -166,7 +166,8 @@
                 formatTime(seconds) {
                     const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
                     const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
-                    const s = String(seconds % 60).padStart(2, '0');
+                    // Tambahkan Math.floor di sini agar detiknya bulat sempurna!
+                    const s = String(Math.floor(seconds % 60)).padStart(2, '0');
                     return `${h}:${m}:${s}`;
                 },
 
@@ -192,14 +193,21 @@
             let peringatanCount = 0;
             const maxPeringatan = 2;
 
+            // Event listener untuk mendeteksi perubahan visibilitas halaman
             document.addEventListener('visibilitychange', function() {
                 if (document.hidden) {
+                    // Tab sedang disembunyikan (siswa pindah tab)
                     peringatanCount++;
+
+                    // 1. LAPORKAN KE SERVER BUAT POTONG NILAI!
+                    @this.call('tambahPelanggaran');
+
                     if (peringatanCount >= maxPeringatan) {
+                        // Peringatan Final (Langsung Kumpul)
                         Swal.fire({
                             icon: 'error',
                             title: 'PELANGGARAN MAKSIMAL!',
-                            html: `Anda telah terdeteksi meninggalkan halaman ujian sebanyak <b>${maxPeringatan} kali</b>.<br><br>Sistem sekarang akan mengakhiri dan mengumpulkan ujian Anda secara paksa.`,
+                            html: `Anda telah terdeteksi meninggalkan halaman ujian sebanyak <b>${maxPeringatan} kali</b>.<br><br>Sistem sekarang akan mengakhiri ujian Anda secara paksa dan memberikan penalti nilai!`,
                             confirmButtonText: 'Kumpulkan Ujian',
                             confirmButtonColor: '#dc2626',
                             allowOutsideClick: false,
@@ -208,10 +216,11 @@
                             @this.call('kumpulkanUjian');
                         });
                     } else {
+                        // Peringatan Biasa (Sekaligus Info Pemotongan Nilai)
                         Swal.fire({
                             icon: 'warning',
-                            title: 'PERINGATAN!',
-                            html: `Anda terdeteksi mencoba membuka tab atau aplikasi lain.<br><br>Ini adalah peringatan ke-<b><span class="text-red-600 text-xl">${peringatanCount}</span></b> dari maksimal <b>${maxPeringatan}</b> peringatan.<br>Mohon tetap fokus pada halaman ujian!`,
+                            title: 'TERDETEKSI KECURANGAN!',
+                            html: `Anda mencoba membuka tab atau aplikasi lain.<br><br>Ini adalah peringatan ke-<b><span class="text-red-600 text-xl">${peringatanCount}</span></b> dari maksimal <b>${maxPeringatan}</b>.<br><br><span class="text-red-600 font-bold">NILAI ANDA TELAH DIKURANGI OTOMATIS SEBAGAI PENALTI!</span>`,
                             confirmButtonText: 'Saya Mengerti',
                             confirmButtonColor: '#f59e0b',
                             allowOutsideClick: false,

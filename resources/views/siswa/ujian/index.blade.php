@@ -26,11 +26,25 @@
                                 <p class="flex items-center"><span class="font-semibold w-32">Durasi</span> <span class="mr-2">:</span> {{ $item->durasi_menit }} Menit</p>
                             </div>
 
+                            @php
+                                $waktuMulai = \Carbon\Carbon::parse($item->tanggal_ujian);
+                                $sekarang = \Carbon\Carbon::now();
+                                $belumMulai = $sekarang->lessThan($waktuMulai);
+                            @endphp
+
                             @if(in_array($item->id, $ujianSelesai) && !auth()->user()->hasRole('admin'))
                                 <button disabled class="w-full bg-gray-200 text-gray-500 font-bold py-2.5 px-4 rounded-lg shadow-inner cursor-not-allowed flex items-center justify-center border border-gray-300">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7z"></path></svg>
                                     Sudah Dikerjakan
                                 </button>
+                            @elseif($belumMulai && !auth()->user()->hasRole('admin'))
+                                <button disabled class="w-full bg-gray-100 text-gray-400 font-bold py-2.5 px-4 rounded-lg shadow-inner cursor-not-allowed flex items-center justify-center border border-gray-200">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    Belum Dimulai
+                                </button>
+                                <p class="text-xs text-center mt-3 text-red-500 font-semibold">
+                                    Bisa diakses pada: <br> {{ $waktuMulai->format('d M Y, H:i') }} WIB
+                                </p>
                             @else
                                 <a href="{{ route('siswa.ujian.mulai', $item->id) }}" class="flex w-full items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-md transition duration-150 transform hover:scale-105 active:scale-95">
                                     Mulai Kerjakan

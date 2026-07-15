@@ -18,18 +18,22 @@ class UjianInteraktif extends Component
     public $jawabanSiswa = [];
     public $inputToken = '';
     public $tokenValid = false;
-    public $durasiMenit = 0;
+    public $sisaDetik = 0;
+    public $jumlahPelanggaran = 0;
 
     public function mount($id)
     {
-        // 1. PENGAMANAN EXTRA: Cek apakah user sudah pernah mengerjakan ujian ini
-        $sudahDikerjakan = \App\Models\HasilUjian::where('user_id', \Illuminate\Support\Facades\Auth::id())
-            ->where('ujian_id', $id)
-            ->exists();
-
         // Mengambil data user yang sedang login dan "mengajari" VS Code tipe Model-nya
         /** @var \App\Models\User $user */
         $user = \Illuminate\Support\Facades\Auth::user();
+
+        // Ambil data ujian
+        $this->ujian = \App\Models\Ujian::findOrFail($id);
+
+        // 1. PENGAMANAN EXTRA: Cek apakah user sudah pernah mengerjakan ujian ini
+        $sudahDikerjakan = \App\Models\HasilUjian::where('user_id', $user->id)
+            ->where('ujian_id', $id)
+            ->exists();
 
         // Jika sudah dikerjakan DAN dia BUKAN admin, tendang keluar!
         if ($sudahDikerjakan && !$user->hasRole('admin')) {
@@ -37,22 +41,64 @@ class UjianInteraktif extends Component
             return redirect('/beranda-siswa');
         }
 
-        // 2. Kode Anda sebelumnya untuk mengambil data ujian dan soal...
-        $this->ujian = \App\Models\Ujian::findOrFail($id);
-        $this->durasiMenit = $this->ujian->durasi_menit;
-        $this->soals = \App\Models\Soal::with('jawabans')->where('ujian_id', $id)->get();
-
-        // 3. AUTO-LOAD DRAFT JAWABAN (JIKA ADA)
-        // Mengecek apakah siswa punya simpanan jawaban sebelumnya kalau ke-refresh
-        $sessionKey = 'draft_ujian_' . $id;
-        if (session()->has($sessionKey)) {
-            $this->jawabanSiswa = session()->get($sessionKey);
+        // 2. PENGAMANAN WAKTU: Cek apakah ujian belum waktunya dimulai
+        if (now() < $this->ujian->tanggal_ujian && !$user->hasRole('admin')) {
+            session()->flash('error', 'Akses ditolak! Ujian ini belum waktunya dimulai.');
+            return redirect('/beranda-siswa');
         }
 
-        // Jika ujian ini belum disetting token oleh guru, langsung loloskan
-        // if (empty($this->ujian->token)) {
-        //     $this->tokenValid = true;
-        // }
+        // 3. Ambil data soal
+        $this->soals = \App\Models\Soal::with('jawabans')->where('ujian_id', $id)->get();
+
+        // 4. LOGIKA TIMER ANTI-REFRESH (Baru Ditambahkan)
+        $sessionKeyWaktu = 'waktu_berakhir_ujian_' . $id;
+
+        if (!session()->has($sessionKeyWaktu)) {
+            // Jika siswa baru pertama kali buka soal, catat "Jam Berakhir" ke session
+            $waktuBerakhir = now()->addMinutes($this->ujian->durasi_menit);
+            session()->put($sessionKeyWaktu, $waktuBerakhir);
+        } else {
+            // Jika siswa refresh halaman, ambil "Jam Berakhir" yang sudah dicatat sebelumnya
+            $waktuBerakhir = session()->get($sessionKeyWaktu);
+        }
+
+        // Hitung sisa detik dari sekarang sampai jam berakhir tersebut
+        $sisaDetik = now()->diffInSeconds($waktuBerakhir, false);
+
+        // Jika waktunya sudah minus (kebablasan), paksa jadi 0
+        $this->sisaDetik = $sisaDetik > 0 ? $sisaDetik : 0;
+
+        // 5. AUTO-LOAD DRAFT JAWABAN
+        // GANTI DARI SESSION KE DATABASE
+        $jawabanDatabase = \App\Models\JawabanSiswa::where('user_id', Auth::id())
+            ->where('ujian_id', $id)
+            ->get();
+
+        foreach ($jawabanDatabase as $jwb) {
+            // Kalau dia PG, masukkan jawaban_id. Kalau essay, masukkan jawaban_teks
+            $this->jawabanSiswa[$jwb->soal_id] = $jwb->jawaban_id ?? $jwb->jawaban_teks;
+        }
+
+        // 6. AUTO-LOAD MEMORI PELANGGARAN
+        $sessionPelanggaran = 'pelanggaran_ujian_' . $id;
+        if (session()->has($sessionPelanggaran)) {
+            $this->jumlahPelanggaran = session()->get($sessionPelanggaran);
+        }
+
+        // 7. CEK APAKAH SUDAH MASUKIN TOKEN SEBELUMNYA
+        if (session()->has('token_valid_ujian_' . $id)) {
+            $this->tokenValid = true;
+        }
+
+        // Membulatkan sisa detik dari server agar tidak jadi desimal (Pencegahan Ganda)
+        $this->sisaDetik = intval($this->sisaDetik);
+    }
+
+    public function tambahPelanggaran()
+    {
+        $this->jumlahPelanggaran++;
+        // Simpan ke session biar nggak hilang kalau di-refresh
+        session()->put('pelanggaran_ujian_' . $this->ujian->id, $this->jumlahPelanggaran);
     }
 
     public function verifikasiToken()
@@ -67,6 +113,8 @@ class UjianInteraktif extends Component
         // 2. Jika token sudah ada, baru cocokkan dengan ketikan siswa
         if (strtoupper(trim($this->inputToken)) === $this->ujian->token) {
             $this->tokenValid = true;
+
+            session()->put('token_valid_ujian_' . $this->ujian->id, true);
         } else {
             $this->inputToken = ''; // Kosongkan form jika salah
             session()->flash('error_token', 'Token yang Anda masukkan salah!');
@@ -82,18 +130,22 @@ class UjianInteraktif extends Component
     {
         $this->jawabanSiswa[$soalId] = $jawabanId;
 
-        // AUTO-SAVE: Simpan jawaban PG ke session setiap kali diklik
-        $sessionKey = 'draft_ujian_' . $this->ujian->id;
-        session()->put($sessionKey, $this->jawabanSiswa);
+        // SIMPAN KE DATABASE SECARA REAL-TIME
+        \App\Models\JawabanSiswa::updateOrCreate(
+            ['user_id' => Auth::id(), 'ujian_id' => $this->ujian->id, 'soal_id' => $soalId],
+            ['jawaban_id' => $jawabanId]
+        );
     }
 
     public function updatedJawabanSiswa($value, $key)
     {
-        $this->jawabanSiswa[$key] = $value;
+        $soalId = $key; // Livewire mengirimkan key sebagai ID soal
 
-        // AUTO-SAVE: Simpan teks Essay ke session setiap kali siswa ngetik
-        $sessionKey = 'draft_ujian_' . $this->ujian->id;
-        session()->put($sessionKey, $this->jawabanSiswa);
+        // SIMPAN TEKS ESSAY KE DATABASE SECARA REAL-TIME
+        \App\Models\JawabanSiswa::updateOrCreate(
+            ['user_id' => Auth::id(), 'ujian_id' => $this->ujian->id, 'soal_id' => $soalId],
+            ['jawaban_teks' => $value]
+        );
     }
 
     public function kumpulkanUjian()
@@ -120,6 +172,17 @@ class UjianInteraktif extends Component
         // Nilai Akhir Sementara (Murni PG)
         $nilaiAkhir = ($jumlahSoalPG > 0) ? ($skorPG / $jumlahSoalPG) * 100 : 0;
 
+        // --- LOGIKA HUKUMAN PINDAH TAB ---
+        // Misalnya kita kurangi 10 poin untuk setiap 1x pindah tab
+        $poinHukuman = $this->jumlahPelanggaran * 10;
+        $nilaiAkhir = $nilaiAkhir - $poinHukuman;
+
+        // Pastikan nilai tidak jadi minus (minus 10, dsb)
+        if ($nilaiAkhir < 0) {
+            $nilaiAkhir = 0;
+        }
+        // ---------------------------------
+
         // 1. Simpan Hasil Ujian (Seperti biasa)
         $hasilUjian = HasilUjian::create([
             'user_id'     => Auth::id(),
@@ -140,9 +203,12 @@ class UjianInteraktif extends Component
             }
         }
 
-        // 3. HAPUS DRAFT SESSION KARENA UJIAN SUDAH BERHASIL DIKUMPULKAN
-        $sessionKey = 'draft_ujian_' . $this->ujian->id;
-        session()->forget($sessionKey);
+
+        // 3. HAPUS SEMUA SESSION KARENA UJIAN SUDAH BERHASIL DIKUMPULKAN
+        session()->forget('draft_ujian_' . $this->ujian->id);
+        session()->forget('waktu_berakhir_ujian_' . $this->ujian->id);
+        session()->forget('token_valid_ujian_' . $this->ujian->id); // Hapus memori token
+        session()->forget('pelanggaran_ujian_' . $this->ujian->id);
 
         session()->flash('success', 'Ujian telah dikumpulkan.');
         return redirect()->route('siswa.ujian.index');

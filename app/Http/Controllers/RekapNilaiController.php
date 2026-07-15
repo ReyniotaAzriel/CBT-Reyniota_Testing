@@ -47,6 +47,19 @@ class RekapNilaiController extends Controller
         return view('rekap-nilai.index', compact('rekapNilai', 'listKelas', 'listJurusan'));
     }
 
+    public function detail($hasil_ujian_id)
+    {
+        $hasil = \App\Models\HasilUjian::with(['user', 'ujian.soals.jawabans'])->findOrFail($hasil_ujian_id);
+
+        // Ambil semua jawaban siswa untuk ujian ini
+        $jawabanSiswa = \App\Models\JawabanSiswa::where('user_id', $hasil->user_id)
+            ->where('ujian_id', $hasil->ujian_id)
+            ->get()
+            ->keyBy('soal_id');
+
+        return view('rekap-nilai.detail', compact('hasil', 'jawabanSiswa'));
+    }
+
     public function exportPdf(Request $request)
     {
         $query = HasilUjian::with(['user', 'ujian'])->latest();

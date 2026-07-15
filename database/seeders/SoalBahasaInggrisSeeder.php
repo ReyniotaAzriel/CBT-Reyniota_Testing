@@ -79,53 +79,14 @@ class SoalBahasaInggrisSeeder extends Seeder
             }
         }
 
-        // Memasukkan 10 Soal PG Dummy (Auto-Generate menggunakan perulangan)
-        for ($i = 6; $i <= 10; $i++) {
-            $soal = Soal::create([
-                'ujian_id'  => $ujian->id,
-                'teks_soal' => "Read the following text to answer question number $i. According to the passage, what is the main idea of paragraph 2?",
-                'tipe_soal' => 'pg',
-            ]);
 
-            $kunciRandom = rand(0, 4); // Acak kunci jawaban antara opsi A sampai E (index 0 - 4)
 
-            $opsiDummy = [
-                'The importance of reading.',
-                'How to improve speaking skills.',
-                'The negative impact of social media.',
-                'Steps to write a good essay.',
-                'The history of the English language.'
-            ];
-
-            foreach ($opsiDummy as $index => $teksOpsi) {
-                Jawaban::create([
-                    'soal_id'      => $soal->id,
-                    'teks_jawaban' => $teksOpsi . " (Option variation $i)",
-                    'is_benar'     => ($index === $kunciRandom),
-                ]);
-            }
-        }
 
         // ==========================================
         // 3. MEMBUAT 5 SOAL ESSAY
         // ==========================================
 
-        $soalEssay = [
-            'Write a short paragraph describing your unforgettable holiday experience. Ensure you use the Simple Past Tense.',
-            'Explain the difference between "Skimming" and "Scanning" in reading techniques. Provide an example for each.',
-            'Read the following statement: "Technology has made human communication less personal." Do you agree or disagree? Support your answer with two arguments.',
-            'Translate the following paragraph into correct and natural English: "Kemarin, saya pergi ke pasar tradisional bersama ibu saya. Kami membeli banyak sayuran segar dan buah-buahan untuk persiapan pesta keluarga besok."',
-            'Write a formal invitation letter to the school principal, inviting him/her to attend the annual English Speech Contest as a guest of honor.'
-        ];
 
-        foreach ($soalEssay as $teksEssay) {
-            Soal::create([
-                'ujian_id'  => $ujian->id,
-                'teks_soal' => $teksEssay,
-                'tipe_soal' => 'essay', // Status tipe soal essay agar terbaca oleh Livewire
-            ]);
-            // Soal essay tidak memerlukan insert data ke tabel jawabans
-        }
 
         // $this->command->info('Sukses: 45 Soal PG dan 5 Soal Essay berhasil ditambahkan!');
     }
