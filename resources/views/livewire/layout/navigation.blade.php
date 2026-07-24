@@ -15,7 +15,7 @@ new class extends Component {
     }
 }; ?>
 
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+<nav x-data="{ open: false }" class="bg-white border-b border-gray-100 sticky top-0 z-50">
     <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-12">
         <div class="flex justify-between h-16">
             <div class="flex">
@@ -54,6 +54,9 @@ new class extends Component {
                         <x-nav-link :href="route('rekap.index')" :active="request()->routeIs('rekap.*')" wire:navigate>
                             {{ __('Rekap Nilai') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('activity-log.index')" :active="request()->routeIs('activity-log.*')" wire:navigate>
+    {{ __('Log Aktivitas') }}
+</x-nav-link>
                     @endhasanyrole
 
                     {{-- Menu Siswa (Desktop) --}}

@@ -10,6 +10,7 @@ use App\Http\Controllers\KoreksiController;
 use App\Http\Controllers\RekapNilaiController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ActivityLogController;
 
 
 Route::get('/', function () {
@@ -83,6 +84,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/rekap-nilai', [RekapNilaiController::class, 'index'])->name('rekap.index');
         Route::get('/rekap-nilai/export/excel', [RekapNilaiController::class, 'exportExcel'])->name('rekap.export.excel');
         Route::get('/rekap-nilai/export/pdf', [RekapNilaiController::class, 'exportPdf'])->name('rekap.export.pdf');
+
+        // Rute Activity Log
+        Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
     });
 
     // ==========================================

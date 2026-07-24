@@ -8,6 +8,7 @@ use App\Models\Ujian;
 use App\Models\Soal;
 use App\Models\HasilUjian;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Models\Activity;
 
 #[Layout('layouts.app')]
 class UjianInteraktif extends Component
@@ -97,8 +98,13 @@ class UjianInteraktif extends Component
     public function tambahPelanggaran()
     {
         $this->jumlahPelanggaran++;
-        // Simpan ke session biar nggak hilang kalau di-refresh
         session()->put('pelanggaran_ujian_' . $this->ujian->id, $this->jumlahPelanggaran);
+
+        // REKAM KE CCTV!
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($this->ujian)
+            ->log('Siswa terdeteksi keluar tab ujian atau membuka aplikasi lain.');
     }
 
     public function verifikasiToken()
