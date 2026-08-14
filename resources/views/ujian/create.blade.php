@@ -16,7 +16,7 @@
                     </div>
                     <div>
                         <h3 class="text-xl font-extrabold text-gray-900">Tambah Jadwal Baru</h3>
-                        <p class="text-gray-500 text-sm mt-1">Lengkapi formulir di bawah ini untuk mengatur waktu dan mata pelajaran yang diujikan.</p>
+                        <p class="text-gray-500 text-sm mt-1">Lengkapi formulir di bawah ini untuk mengatur waktu dan target peserta ujian.</p>
                     </div>
                 </div>
 
@@ -38,10 +38,7 @@
                                 </div>
                             </div>
                             @error('mata_pelajaran_id')
-                                <p class="text-red-500 text-xs font-bold mt-2 flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    {{ $message }}
-                                </p>
+                                <p class="text-red-500 text-xs font-bold mt-2">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -49,11 +46,42 @@
                             <label for="judul_ujian" class="block text-sm font-bold text-gray-700 mb-2">Judul Ujian <span class="text-red-500">*</span></label>
                             <input type="text" name="judul_ujian" id="judul_ujian" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3.5 transition-colors duration-200" required placeholder="Contoh: Ujian Tengah Semester Ganjil">
                             @error('judul_ujian')
-                                <p class="text-red-500 text-xs font-bold mt-2 flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    {{ $message }}
-                                </p>
+                                <p class="text-red-500 text-xs font-bold mt-2">{{ $message }}</p>
                             @enderror
+                        </div>
+
+                        <!-- FILTER KELAS & JURUSAN BARU -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 bg-blue-50/50 rounded-2xl border border-blue-100">
+                            <div>
+                                <label for="kelas" class="block text-sm font-bold text-gray-700 mb-2">Target Kelas <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <select name="kelas" id="kelas" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3.5 transition-colors duration-200 cursor-pointer appearance-none" required>
+                                        <option value="Semua Kelas">Semua Kelas</option>
+                                        <option value="X">Kelas X</option>
+                                        <option value="XI">Kelas XI</option>
+                                        <option value="XII">Kelas XII</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="jurusan" class="block text-sm font-bold text-gray-700 mb-2">Target Jurusan <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <select name="jurusan" id="jurusan" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3.5 transition-colors duration-200 cursor-pointer appearance-none" required>
+                                        <option value="Semua Jurusan">Semua Jurusan</option>
+                                        <option value="RPL">RPL (Rekayasa Perangkat Lunak)</option>
+                                        <option value="TKJ">TKJ (Teknik Komputer Jaringan)</option>
+                                        <option value="Akuntansi">Akuntansi</option>
+                                        <option value="Perkantoran">Perkantoran</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -61,10 +89,7 @@
                                 <label for="tanggal_ujian" class="block text-sm font-bold text-gray-700 mb-2">Tanggal & Waktu Mulai <span class="text-red-500">*</span></label>
                                 <input type="datetime-local" name="tanggal_ujian" id="tanggal_ujian" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3.5 transition-colors duration-200" required>
                                 @error('tanggal_ujian')
-                                    <p class="text-red-500 text-xs font-bold mt-2 flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        {{ $message }}
-                                    </p>
+                                    <p class="text-red-500 text-xs font-bold mt-2">{{ $message }}</p>
                                 @enderror
                             </div>
 
@@ -77,10 +102,7 @@
                                     </div>
                                 </div>
                                 @error('durasi_menit')
-                                    <p class="text-red-500 text-xs font-bold mt-2 flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        {{ $message }}
-                                    </p>
+                                    <p class="text-red-500 text-xs font-bold mt-2">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
@@ -96,7 +118,6 @@
                                 Simpan Jadwal Ujian
                             </button>
                         </div>
-
                     </form>
                 </div>
             </div>

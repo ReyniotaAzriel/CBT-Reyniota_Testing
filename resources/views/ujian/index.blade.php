@@ -19,7 +19,7 @@
                 <div class="p-6 md:p-8 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-white">
                     <div>
                         <h3 class="text-xl font-extrabold text-gray-900">Daftar Jadwal Ujian</h3>
-                        <p class="text-sm text-gray-500 mt-1">Kelola waktu, mata pelajaran, dan token keamanan ujian.</p>
+                        <p class="text-sm text-gray-500 mt-1">Kelola waktu, mata pelajaran, dan target peserta ujian.</p>
                     </div>
                     <a href="{{ route('ujian.create') }}" class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-200 transition-all transform hover:scale-105">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -33,6 +33,7 @@
                             <tr>
                                 <th class="px-6 py-4 font-bold border-b border-gray-100 text-center w-16">No</th>
                                 <th class="px-6 py-4 font-bold border-b border-gray-100">Info Ujian</th>
+                                <th class="px-6 py-4 font-bold border-b border-gray-100 text-center">Target Peserta</th>
                                 <th class="px-6 py-4 font-bold border-b border-gray-100 text-center">Jadwal & Durasi</th>
                                 <th class="px-6 py-4 font-bold border-b border-gray-100 text-center">Token Akses</th>
                                 <th class="px-6 py-4 font-bold border-b border-gray-100 text-center">Aksi</th>
@@ -52,6 +53,16 @@
                                         </div>
                                     </td>
 
+                                    <!-- Tambahan Kolom Target Peserta (Kelas & Jurusan) -->
+                                    <td class="px-6 py-6 text-center">
+                                        <span class="inline-block px-3 py-1 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold rounded-md mb-2">
+                                            Kelas: {{ $item->kelas ?? 'Semua Kelas' }}
+                                        </span><br>
+                                        <span class="inline-block px-3 py-1 bg-orange-50 border border-orange-100 text-orange-700 text-xs font-bold rounded-md">
+                                            Jurusan: {{ $item->jurusan ?? 'Semua Jurusan' }}
+                                        </span>
+                                    </td>
+
                                     <td class="px-6 py-6 text-center">
                                         <p class="text-sm font-bold text-gray-800">{{ \Carbon\Carbon::parse($item->tanggal_ujian)->format('d M Y') }}</p>
                                         <p class="text-xs text-gray-500 mt-1 font-medium">{{ \Carbon\Carbon::parse($item->tanggal_ujian)->format('H:i') }} WIB</p>
@@ -62,16 +73,15 @@
 
                                     <td class="px-6 py-6 text-center">
                                         @if ($item->token)
-                                            <div class="inline-flex items-center justify-center px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-xl shadow-inner">
+                                            <div class="inline-flex items-center justify-center px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-xl shadow-inner mb-3">
                                                 <span class="text-emerald-700 font-mono font-black text-lg tracking-[0.25em]">{{ $item->token }}</span>
                                             </div>
                                         @else
-                                            <span class="inline-flex items-center justify-center px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-400 font-bold text-sm italic">
+                                            <span class="inline-flex items-center justify-center px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-400 font-bold text-sm italic mb-3">
                                                 Belum Ada
                                             </span>
                                         @endif
-
-                                        <form action="{{ route('ujian.generate_token', $item->id) }}" method="POST" class="mt-3">
+                                        <form action="{{ route('ujian.generate_token', $item->id) }}" method="POST">
                                             @csrf
                                             <button type="submit" class="inline-flex items-center px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-bold text-gray-700 uppercase tracking-wider hover:bg-gray-50 hover:text-blue-600 hover:border-blue-300 transition-all shadow-sm">
                                                 <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -97,7 +107,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-16 text-center">
+                                    <td colspan="6" class="px-6 py-16 text-center">
                                         <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                                         <p class="text-gray-500 text-lg font-medium">Belum ada jadwal ujian.</p>
                                         <p class="text-gray-400 text-sm mt-1">Klik tombol di atas untuk membuat jadwal baru.</p>
@@ -108,22 +118,22 @@
                     </table>
                 </div>
             </div>
-
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    @if(session('success'))
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: "{{ session('success') }}",
-            showConfirmButton: false,
-            timer: 1000, // <--- INI DURASINYA, 1.5 detik pas!
-            customClass: {
-                popup: 'rounded-3xl shadow-xl'
-            }
-        });
-    @endif
-</script>
+    <script>
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                showConfirmButton: false,
+                timer: 1500,
+                customClass: {
+                    popup: 'rounded-3xl shadow-xl'
+                }
+            });
+        @endif
+    </script>
 </x-app-layout>

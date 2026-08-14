@@ -1,6 +1,8 @@
 <?php
 
+use \Illuminate\Support\Facades\Auth;
 use \Illuminate\Support\Facades\Route;
+use \Illuminate\Http\Request;
 use App\Livewire\UjianInteraktif;
 use App\Http\Controllers\MataPelajaranController;
 use App\Http\Controllers\UjianController;
@@ -100,3 +102,10 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__ . '/auth.php';
+
+Route::post('/logout', function (Request $request) {
+    Auth::guard('web')->logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect('/');
+})->name('logout');

@@ -30,8 +30,22 @@ class RoleAndAdminSeeder extends Seeder
         $guru = User::firstOrCreate(
             ['email' => 'guru@sekolah.com'],
             [
-                'name' => 'Bapak/Ibu Guru',
+                'name' => 'Bapak Guru Yayat Ruhiyat',
                 'password' => Hash::make('password123'),
+                'kelas' => 'XII',
+                'jurusan' => 'RPL',
+            ]
+        );
+        $guru->assignRole('guru');
+
+        // 3. Membuat Akun Guru
+        $guru = User::firstOrCreate(
+            ['email' => 'guru2@sekolah.com'],
+            [
+                'name' => 'Ibu Guru Siti Nurbaya',
+                'password' => Hash::make('password123'),
+                'kelas' => 'XII',
+                'jurusan' => 'TJKT',
             ]
         );
         $guru->assignRole('guru');

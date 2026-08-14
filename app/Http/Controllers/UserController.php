@@ -6,6 +6,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage; // <-- Wajib dipanggil untuk kelola file
 
 class UserController extends Controller
 {
@@ -30,12 +31,20 @@ class UserController extends Controller
             'role' => 'required|in:admin,guru,siswa',
             'kelas' => 'nullable|string|max:50',
             'jurusan' => 'nullable|string|max:100',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // <-- Validasi Foto
         ]);
+
+        // Logika Upload Foto Baru
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('profile_photos', 'public');
+        }
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
+            'photo' => $photoPath, // <-- Simpan ke database
             // Simpan kelas & jurusan hanya jika role-nya siswa
             'kelas' => $request->role === 'siswa' ? $request->kelas : null,
             'jurusan' => $request->role === 'siswa' ? $request->jurusan : null,
@@ -60,6 +69,7 @@ class UserController extends Controller
             'role' => 'required|in:admin,guru,siswa',
             'kelas' => 'nullable|string|max:50',
             'jurusan' => 'nullable|string|max:100',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // <-- Validasi Foto
         ]);
 
         $data = [
@@ -68,6 +78,15 @@ class UserController extends Controller
             'kelas' => $request->role === 'siswa' ? $request->kelas : null,
             'jurusan' => $request->role === 'siswa' ? $request->jurusan : null,
         ];
+
+        // Logika Update Foto & Hapus Foto Lama
+        if ($request->hasFile('photo')) {
+            // Cek dan hapus foto lama jika ada
+            if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+                Storage::disk('public')->delete($user->photo);
+            }
+            $data['photo'] = $request->file('photo')->store('profile_photos', 'public');
+        }
 
         // Hanya ubah password jika kolom password diisi
         if ($request->filled('password')) {
@@ -85,6 +104,11 @@ class UserController extends Controller
         // Menggunakan Facade Auth agar Intelephense paham
         if (\Illuminate\Support\Facades\Auth::id() === $user->id) {
             return redirect()->route('users.index')->with('error', 'Anda tidak bisa menghapus akun Anda sendiri!');
+        }
+
+        // Hapus file foto dari storage kalau usernya dihapus
+        if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+            Storage::disk('public')->delete($user->photo);
         }
 
         $user->delete();
