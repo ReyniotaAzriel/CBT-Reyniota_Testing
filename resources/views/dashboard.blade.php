@@ -2,7 +2,7 @@
     <!-- Header Title yang nampil di sebelah tombol collapse sidebar -->
     <x-slot name="header">
         <h2 class="font-bold text-2xl text-gray-800 tracking-tight">
-            Dashboard <span class="text-blue-600">Utama</span>
+            Dashboard <span class="text-[#5c54d8]">Utama</span>
         </h2>
     </x-slot>
 

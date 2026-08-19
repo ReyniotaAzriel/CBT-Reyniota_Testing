@@ -27,24 +27,25 @@ class SoalController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validasi
+        // 1. Validasi Pintar
         $request->validate([
             'ujian_id'    => 'required|exists:ujians,id',
             'teks_soal'   => 'required|string',
             'tipe_soal'   => 'required|in:pg,essay',
+            // Wajibkan pilihan & kunci hanya jika tipe_soal = pg
+            'pilihan'     => 'required_if:tipe_soal,pg|array',
+            'kunci_benar' => 'required_if:tipe_soal,pg',
         ]);
 
         // 2. Simpan ke database
-        // Pastikan kolom 'tipe_soal' ada di sini
         $soal = Soal::create([
             'ujian_id'  => $request->ujian_id,
             'teks_soal' => $request->teks_soal,
-            'tipe_soal' => $request->tipe_soal, // Pastikan ini mengambil dari request
+            'tipe_soal' => $request->tipe_soal,
         ]);
 
         // 3. Hanya simpan jawaban jika tipe soal adalah 'pg'
-        if ($request->tipe_soal === 'pg') {
-            // Logika simpan jawaban...
+        if ($request->tipe_soal === 'pg' && $request->has('pilihan')) {
             foreach ($request->pilihan as $index => $teks_pilihan) {
                 if ($teks_pilihan) { // Pastikan pilihan tidak null
                     Jawaban::create([
@@ -70,13 +71,14 @@ class SoalController extends Controller
 
     public function update(Request $request, string $id)
     {
-        // 1. Validasi Input
+        // 1. Validasi Input Cerdas
         $request->validate([
-            'ujian_id'     => 'required|exists:ujians,id',
-            'teks_soal'    => 'required|string',
-            'pilihan'      => 'required|array|min:2',
-            'pilihan.*'    => 'required|string',
-            'kunci_benar'  => 'required|integer|min:0'
+            'ujian_id'    => 'required|exists:ujians,id',
+            'teks_soal'   => 'required|string',
+            'tipe_soal'   => 'required|in:pg,essay',
+            // Pilihan dan kunci HANYA wajib jika tipe soalnya PG
+            'pilihan'     => 'required_if:tipe_soal,pg|array',
+            'kunci_benar' => 'required_if:tipe_soal,pg'
         ]);
 
         $soal = Soal::findOrFail($id);
@@ -85,17 +87,23 @@ class SoalController extends Controller
         $soal->update([
             'ujian_id'  => $request->ujian_id,
             'teks_soal' => $request->teks_soal,
+            'tipe_soal' => $request->tipe_soal,
         ]);
 
-        // 3. Trik Cerdas: Hapus semua jawaban lama, lalu buat ulang yang baru
+        // 3. Trik Cerdas: Hapus semua jawaban lama
         $soal->jawabans()->delete();
 
-        foreach ($request->pilihan as $index => $teks_pilihan) {
-            Jawaban::create([
-                'soal_id'      => $soal->id,
-                'teks_jawaban' => $teks_pilihan,
-                'is_benar'     => ($request->kunci_benar == $index) ? true : false,
-            ]);
+        // 4. Buat ulang yang baru HANYA JIKA tipe soalnya PG
+        if ($request->tipe_soal === 'pg' && $request->has('pilihan')) {
+            foreach ($request->pilihan as $index => $teks_pilihan) {
+                if ($teks_pilihan) {
+                    Jawaban::create([
+                        'soal_id'      => $soal->id,
+                        'teks_jawaban' => $teks_pilihan,
+                        'is_benar'     => ($request->kunci_benar == $index) ? true : false,
+                    ]);
+                }
+            }
         }
 
         return redirect()->route('soal.index')->with('success', 'Soal dan pilihan jawaban berhasil diperbarui!');
@@ -136,15 +144,13 @@ class SoalController extends Controller
         }
 
         // 3. Proses Import File Excel
-        // 3. Proses Import File Excel
         try {
             \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\SoalImport($targetUjianId), $request->file('file'));
 
-            // UBAH BARIS INI: Arahkan ke soal.index (Halaman Kartu Bank Soal)
+            // Arahkan ke soal.index (Halaman Kartu Bank Soal)
             return redirect()->route('soal.index')->with('success', 'Ratusan soal berhasil diimport!');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memproses file Excel: ' . $e->getMessage());
         }
     }
-
 }

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-bold text-2xl text-gray-800 tracking-tight">
-            <span class="text-blue-600">Hasil</span> Ujian Saya
+            Hasil <span class="text-[#5c54d8]">Ujian Saya</span>
         </h2>
     </x-slot>
 

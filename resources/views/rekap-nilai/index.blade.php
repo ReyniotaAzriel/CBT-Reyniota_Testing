@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-bold text-2xl text-gray-800 tracking-tight">
-            <span class="text-blue-600">Rekap</span> Nilai Siswa
+            Rekap <span class="text-[#5c54d8]">Nilai Siswa</span>
         </h2>
     </x-slot>
 

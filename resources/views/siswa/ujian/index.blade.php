@@ -1,62 +1,90 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Lobi Ujian Siswa') }}
+        <h2 class="font-bold text-2xl text-gray-800 tracking-tight">
+            Lobi <span class="text-[#5c54d8]">Ujian Siswa</span>
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-12 bg-[#f4f7fe] min-h-screen">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
-            <div class="mb-6">
-                <h3 class="text-2xl font-bold text-gray-800">Selamat Datang, {{ Auth::user()->name }}!</h3>
-                <p class="text-gray-600">Silakan pilih ujian yang tersedia di bawah ini untuk mulai mengerjakan.</p>
-            </div>
+            
 
+            <!-- Grid Daftar Ujian -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse ($ujian as $item)
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-blue-500 transition-transform transform hover:-translate-y-1 hover:shadow-lg duration-300">
-                        <div class="p-6 text-gray-900">
-                            <h4 class="font-bold text-lg mb-2 text-blue-700">{{ $item->judul_ujian }}</h4>
-                            <div class="text-sm text-gray-600 mb-5 space-y-2">
-                                <p class="flex items-center"><span class="font-semibold w-32">Mata Pelajaran</span> <span class="mr-2">:</span>
-                                    {{ $item->mataPelajaran->nama_pelajaran }}</p>
-                                <p class="flex items-center"><span class="font-semibold w-32">Jadwal</span> <span class="mr-2">:</span>
-                                    {{ \Carbon\Carbon::parse($item->tanggal_ujian)->format('d M Y - H:i') }}</p>
-                                <p class="flex items-center"><span class="font-semibold w-32">Durasi</span> <span class="mr-2">:</span> {{ $item->durasi_menit }} Menit</p>
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow relative flex flex-col">
+                        <!-- Garis Dekorasi Atas -->
+                        <div class="h-2 w-full bg-gradient-to-r from-[#5c54d8] to-indigo-400"></div>
+
+                        <div class="p-6 md:p-8 flex flex-col flex-1">
+                            <!-- Judul & Badge Mapel -->
+                            <h4 class="font-black text-xl text-gray-800 mb-2 line-clamp-2">{{ $item->judul_ujian }}</h4>
+                            <div class="inline-block px-3 py-1 bg-indigo-50 border border-indigo-100 text-[#5c54d8] text-[10px] font-black rounded-lg uppercase tracking-wider mb-6 w-max">
+                                {{ $item->mataPelajaran->nama_pelajaran }}
                             </div>
 
+                            <!-- Info Jadwal & Durasi -->
+                            <div class="space-y-4 mb-8 flex-1">
+                                <div class="flex items-center gap-3 text-sm text-gray-600 font-medium">
+                                    <div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 shrink-0">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    </div>
+                                    <div>
+                                        <span class="block text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Jadwal Ujian</span>
+                                        <span class="text-gray-800 font-bold">{{ \Carbon\Carbon::parse($item->tanggal_ujian)->format('d M Y - H:i') }} WIB</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 text-sm text-gray-600 font-medium">
+                                    <div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 shrink-0">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    </div>
+                                    <div>
+                                        <span class="block text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Durasi Waktu</span>
+                                        <span class="text-gray-800 font-bold">{{ $item->durasi_menit }} Menit</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Logika Tombol Aksi -->
                             @php
                                 $waktuMulai = \Carbon\Carbon::parse($item->tanggal_ujian);
                                 $sekarang = \Carbon\Carbon::now();
                                 $belumMulai = $sekarang->lessThan($waktuMulai);
                             @endphp
 
-                            @if(in_array($item->id, $ujianSelesai) && !auth()->user()->hasRole('admin'))
-                                <button disabled class="w-full bg-gray-200 text-gray-500 font-bold py-2.5 px-4 rounded-lg shadow-inner cursor-not-allowed flex items-center justify-center border border-gray-300">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7z"></path></svg>
-                                    Sudah Dikerjakan
-                                </button>
-                            @elseif($belumMulai && !auth()->user()->hasRole('admin'))
-                                <button disabled class="w-full bg-gray-100 text-gray-400 font-bold py-2.5 px-4 rounded-lg shadow-inner cursor-not-allowed flex items-center justify-center border border-gray-200">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    Belum Dimulai
-                                </button>
-                                <p class="text-xs text-center mt-3 text-red-500 font-semibold">
-                                    Bisa diakses pada: <br> {{ $waktuMulai->format('d M Y, H:i') }} WIB
-                                </p>
-                            @else
-                                <a href="{{ route('siswa.ujian.mulai', $item->id) }}" class="flex w-full items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-md transition duration-150 transform hover:scale-105 active:scale-95">
-                                    Mulai Kerjakan
-                                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                                </a>
-                            @endif
+                            <div class="mt-auto pt-4 border-t border-gray-50">
+                                @if(in_array($item->id, $ujianSelesai) && !auth()->user()->hasRole('admin'))
+                                    <button disabled class="w-full bg-gray-50 text-gray-400 font-bold py-3 px-4 rounded-xl cursor-not-allowed flex items-center justify-center border border-gray-200 transition-colors">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Sudah Dikerjakan
+                                    </button>
+                                @elseif($belumMulai && !auth()->user()->hasRole('admin'))
+                                    <button disabled class="w-full bg-orange-50 text-orange-400 font-bold py-3 px-4 rounded-xl cursor-not-allowed flex items-center justify-center border border-orange-100 transition-colors">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Belum Dimulai
+                                    </button>
+                                    <p class="text-[11px] text-center mt-3 text-orange-500 font-bold bg-orange-50/50 py-1.5 rounded-lg border border-orange-100/50">
+                                        Bisa diakses pada: <br> {{ $waktuMulai->format('d M Y, H:i') }} WIB
+                                    </p>
+                                @else
+                                    <a href="{{ route('siswa.ujian.mulai', $item->id) }}" class="w-full inline-flex justify-center items-center bg-[#5c54d8] hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-md shadow-indigo-200 transition-all transform hover:-translate-y-0.5">
+                                        Mulai Kerjakan
+                                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                    </a>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @empty
-                    <div class="col-span-full bg-white p-10 rounded-lg shadow-sm text-center flex flex-col items-center justify-center">
-                        <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        <p class="text-gray-500 font-medium text-lg">Belum ada jadwal ujian yang tersedia saat ini.</p>
+                    <div class="col-span-full bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="p-12 flex flex-col items-center justify-center text-center">
+                            <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                                <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            </div>
+                            <h4 class="text-xl font-black text-gray-800 mb-2">Belum Ada Ujian</h4>
+                            <p class="text-gray-500 font-medium">Saat ini tidak ada jadwal ujian yang tersedia untuk Anda.</p>
+                        </div>
                     </div>
                 @endforelse
             </div>

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-bold text-2xl text-gray-800 tracking-tight">
-            Manajemen <span class="text-blue-600">Jadwal Ujian</span>
+            Manajemen <span class="text-[#5c54d8]">Jadwal Ujian</span>
         </h2>
     </x-slot>
 

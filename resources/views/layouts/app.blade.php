@@ -42,14 +42,15 @@
                         $isSiswa = $userRole === 'siswa';
                     @endphp
 
-                    <p class="px-3 text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-3 whitespace-nowrap" x-show="sidebarExpanded" x-transition>Menu Utama</p>
-
-                    <a href="{{ route('dashboard') }}" title="Dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold {{ request()->routeIs('dashboard') ? 'bg-white/20 text-white shadow-inner border border-white/10' : 'text-indigo-100 hover:bg-white/10 hover:text-white' }}">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
-                        <span class="whitespace-nowrap" x-show="sidebarExpanded" x-transition>Dashboard</span>
-                    </a>
-
+                    <!-- MENU UTAMA (HANYA UNTUK ADMIN & GURU) -->
                     @if($isAdmin || $isGuru)
+                        <p class="px-3 text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-3 whitespace-nowrap" x-show="sidebarExpanded" x-transition>Menu Utama</p>
+
+                        <a href="{{ route('dashboard') }}" title="Dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold {{ request()->routeIs('dashboard') ? 'bg-white/20 text-white shadow-inner border border-white/10' : 'text-indigo-100 hover:bg-white/10 hover:text-white' }}">
+                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
+                            <span class="whitespace-nowrap" x-show="sidebarExpanded" x-transition>Dashboard</span>
+                        </a>
+
                         <p class="px-3 text-[10px] font-black text-indigo-300 uppercase tracking-widest mt-8 mb-3 whitespace-nowrap" x-show="sidebarExpanded" x-transition>Data Master</p>
                         @if($isAdmin)
                             <a href="{{ route('users.index') }}" title="Kelola Pengguna" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold {{ request()->routeIs('users.*') ? 'bg-white/20 text-white shadow-inner border border-white/10' : 'text-indigo-100 hover:bg-white/10 hover:text-white' }}">
@@ -82,7 +83,8 @@
                     @endif
 
                     @if($isAdmin || $isSiswa)
-                        <p class="px-3 text-[10px] font-black text-indigo-300 uppercase tracking-widest mt-8 mb-3 whitespace-nowrap" x-show="sidebarExpanded" x-transition>Area Siswa</p>
+                        <p class="px-3 text-[10px] font-black text-indigo-300 uppercase tracking-widest {{ $isSiswa ? '' : 'mt-8' }} mb-3 whitespace-nowrap" x-show="sidebarExpanded" x-transition>Area Siswa</p>
+
                         <a href="{{ route('siswa.ujian.index') }}" title="Ujian Saya" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold {{ request()->routeIs('siswa.ujian.*') ? 'bg-white/20 text-white shadow-inner border border-white/10' : 'text-indigo-100 hover:bg-white/10 hover:text-white' }}">
                             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                             <span class="whitespace-nowrap" x-show="sidebarExpanded" x-transition>Ujian Saya</span>
@@ -95,6 +97,7 @@
 
                     @if($isAdmin || $isGuru)
                         <p class="px-3 text-[10px] font-black text-indigo-300 uppercase tracking-widest mt-8 mb-3 whitespace-nowrap" x-show="sidebarExpanded" x-transition>Sistem</p>
+
                         <a href="{{ route('activity-log.index') }}" title="Log Aktivitas" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold {{ request()->routeIs('activity-log.*') ? 'bg-white/20 text-white shadow-inner border border-white/10' : 'text-indigo-100 hover:bg-white/10 hover:text-white' }}">
                             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <span class="whitespace-nowrap" x-show="sidebarExpanded" x-transition>Log Aktivitas</span>
@@ -102,7 +105,7 @@
                     @endif
                 </nav>
 
-                <!-- Footer Profil Sidebar -->
+                <!-- Footer Profil Sidebar DENGAN FOTO -->
                 <div class="p-3 border-t border-indigo-400/30 shrink-0">
                     <div class="flex items-center gap-3 bg-white/10 p-2.5 rounded-2xl overflow-hidden">
                         <div class="w-10 h-10 rounded-full bg-white text-[#5c54d8] flex items-center justify-center font-black text-lg shrink-0 overflow-hidden border-2 border-indigo-200">
@@ -126,14 +129,12 @@
 
                     <!-- Kiri: Tombol Buka/Tutup Sidebar Desktop & Mobile -->
                     <div class="flex items-center gap-4">
-                        <!-- Tombol Desktop untuk Melipat/Membuka Sidebar -->
                         <button @click="sidebarExpanded = !sidebarExpanded" title="Lipat/Buka Sidebar" class="hidden lg:flex text-gray-500 hover:text-[#5c54d8] focus:outline-none bg-gray-50 hover:bg-indigo-50 p-2.5 rounded-xl transition-colors cursor-pointer">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
                             </svg>
                         </button>
 
-                        <!-- Tombol Mobile -->
                         <button @click="sidebarOpen = true" class="text-gray-500 hover:text-[#5c54d8] focus:outline-none lg:hidden bg-gray-50 hover:bg-indigo-50 p-2 rounded-xl transition-colors">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                         </button>

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-bold text-2xl text-gray-800 tracking-tight">
-            Log <span class="text-blue-600">Aktivitas Sistem</span> (CCTV)
+            Log <span class="text-[#5c54d8]">Aktivitas Sistem</span> (CCTV)
         </h2>
     </x-slot>
 
@@ -14,7 +14,7 @@
                 </div>
 
                 <div class="p-8">
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto custom-scrollbar">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="border-b-2 border-gray-100">
@@ -44,7 +44,27 @@
                                                   ($log->event == 'deleted' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')) }}">
                                                 {{ strtoupper($log->event ?? 'AKTIVITAS') }}
                                             </span>
-                                            <p class="text-gray-800 font-medium mt-2">{{ $log->description }}</p>
+
+                                            <!-- Logika Translasi Deskripsi Log -->
+                                            @php
+                                                $deskripsi = $log->description;
+                                                $subject = $log->subject_type ? class_basename($log->subject_type) : 'Data';
+
+                                                // Jika default Spatie
+                                                if ($deskripsi === 'created') {
+                                                    if (in_array($subject, ['HasilUjian', 'UjianSiswa', 'Koreksi']) || $log->log_name === 'ujian') {
+                                                        $deskripsi = 'Selesai mengerjakan ujian.';
+                                                    } else {
+                                                        $deskripsi = "Menambahkan data $subject baru ke sistem.";
+                                                    }
+                                                } elseif ($deskripsi === 'updated') {
+                                                    $deskripsi = "Memperbarui data $subject.";
+                                                } elseif ($deskripsi === 'deleted') {
+                                                    $deskripsi = "Menghapus data $subject dari sistem.";
+                                                }
+                                            @endphp
+
+                                            <p class="text-gray-800 font-medium mt-2">{{ $deskripsi }}</p>
                                         </td>
                                     </tr>
                                 @empty
@@ -62,4 +82,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Tambahan Style CSS jika class custom-scrollbar belum ke-load global -->
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(156, 163, 175, 0.5); border-radius: 20px; }
+    </style>
 </x-app-layout>

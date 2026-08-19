@@ -1,7 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-bold text-2xl text-gray-800 tracking-tight">Manajemen <span class="text-blue-600">Pengguna</span>
-        </h2>
+        <h2 class="font-bold text-2xl text-gray-800 tracking-tight">Manajemen <span class="text-[#5c54d8]">Pengguna</span></h2>
     </x-slot>
 
     <div class="py-12 bg-gray-50 min-h-screen">

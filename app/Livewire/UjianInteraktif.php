@@ -179,17 +179,15 @@ class UjianInteraktif extends Component
         $nilaiAkhir = ($jumlahSoalPG > 0) ? ($skorPG / $jumlahSoalPG) * 100 : 0;
 
         // --- LOGIKA HUKUMAN PINDAH TAB ---
-        // Misalnya kita kurangi 10 poin untuk setiap 1x pindah tab
         $poinHukuman = $this->jumlahPelanggaran * 10;
         $nilaiAkhir = $nilaiAkhir - $poinHukuman;
 
-        // Pastikan nilai tidak jadi minus (minus 10, dsb)
         if ($nilaiAkhir < 0) {
             $nilaiAkhir = 0;
         }
         // ---------------------------------
 
-        // 1. Simpan Hasil Ujian (Seperti biasa)
+        // 1. Simpan Hasil Ujian
         $hasilUjian = HasilUjian::create([
             'user_id'     => Auth::id(),
             'ujian_id'    => $this->ujian->id,
@@ -197,23 +195,27 @@ class UjianInteraktif extends Component
             'status'      => $adaEssay ? 'menunggu_koreksi' : 'selesai',
         ]);
 
-        // 2. Simpan Teks Jawaban Essay Siswa ke Database
+        // 2. JANGKA PANJANG FIX: Pastikan teks essay disimpan dengan updateOrCreate
+        // untuk mencegah duplikasi baris jika real-time save sudah aktif sebelumnya.
         foreach ($this->soals as $soal) {
             if ($soal->tipe_soal == 'essay' && isset($this->jawabanSiswa[$soal->id])) {
-                \App\Models\JawabanSiswa::create([
-                    'user_id'      => Auth::id(),
-                    'ujian_id'     => $this->ujian->id,
-                    'soal_id'      => $soal->id,
-                    'jawaban_teks' => $this->jawabanSiswa[$soal->id],
-                ]);
+                \App\Models\JawabanSiswa::updateOrCreate(
+                    [
+                        'user_id'  => Auth::id(),
+                        'ujian_id' => $this->ujian->id,
+                        'soal_id'  => $soal->id,
+                    ],
+                    [
+                        'jawaban_teks' => $this->jawabanSiswa[$soal->id]
+                    ]
+                );
             }
         }
 
-
-        // 3. HAPUS SEMUA SESSION KARENA UJIAN SUDAH BERHASIL DIKUMPULKAN
+        // 3. HAPUS SEMUA SESSION
         session()->forget('draft_ujian_' . $this->ujian->id);
         session()->forget('waktu_berakhir_ujian_' . $this->ujian->id);
-        session()->forget('token_valid_ujian_' . $this->ujian->id); // Hapus memori token
+        session()->forget('token_valid_ujian_' . $this->ujian->id);
         session()->forget('pelanggaran_ujian_' . $this->ujian->id);
 
         session()->flash('success', 'Ujian telah dikumpulkan.');
