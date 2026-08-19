@@ -12,6 +12,11 @@ class Ujian extends Model
     // 1. Mengizinkan kolom-kolom ini diisi melalui formulir
     protected $fillable = ['mata_pelajaran_id', 'judul_ujian', 'tanggal_ujian', 'durasi_menit', 'token', 'kelas', 'jurusan'];
 
+
+    public function hasilUjians()
+    {
+        return $this->hasMany(HasilUjian::class, 'ujian_id');
+    }
     // 2. Membuat relasi: 1 Ujian dimiliki oleh 1 Mata Pelajaran
     public function mataPelajaran()
     {
